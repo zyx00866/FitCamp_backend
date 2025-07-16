@@ -1,12 +1,19 @@
 import { MidwayConfig } from '@midwayjs/core';
+import { User } from '../entity/user.entity';
+import { Activity } from '../entity/activity.entity';
+import { Comment } from '../entity/comment.entity';
 
 export default {
   typeorm: {
-    type: 'sqlite',
-    database: '/data/fitcamp.sqlite',
-    synchronize: true,
-    logging: true,
-    entities: ['src/entity/**/*.ts'],
+    dataSource: {
+      default: {
+        type: 'sqlite',
+        database: '/data/fitcamp.sqlite',
+        synchronize: true,
+        logging: true,
+        entities: [User, Activity, Comment],
+      },
+    },
   },
   swagger: {
     title: 'FitCamp API',

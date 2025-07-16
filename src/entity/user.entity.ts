@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 
 import { Activity } from './activity.entity';
@@ -14,19 +15,20 @@ export class User {
   id: number;
   @Column()
   name: string;
-  @Column()
+  @Column({ unique: true })
   account: string;
   @Column()
   password: string;
-  @Column()
+  @Column({ default: '' })
   avatar: string;
-  @Column()
+  @Column({ default: '' })
   profile: string;
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   registerTime: Date;
   @ManyToMany(() => Activity, activity => activity.participants)
   @JoinTable()
   activities: Activity[];
+  @OneToMany(() => Comment, comment => comment.user)
   comments: Comment[];
   @ManyToMany(() => Activity, activity => activity.favoritedBy)
   @JoinTable()

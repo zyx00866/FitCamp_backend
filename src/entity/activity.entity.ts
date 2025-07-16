@@ -1,28 +1,63 @@
-import { Entity, Column, PrimaryColumn, ManyToMany } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToMany, OneToMany } from 'typeorm';
 import { User } from './user.entity';
 import { Comment } from './comment.entity';
+
+export enum ActivityType {
+  RUNNING = '跑步',
+  SWIMMING = '游泳',
+  WORKOUT = '健身',
+  DANCE = '舞蹈',
+  BASKETBALL = '篮球',
+  FOOTBALL = '足球',
+  BADMINTON = '羽毛球',
+  OTHERS = '其他',
+}
 
 @Entity('activity')
 export class Activity {
   @PrimaryColumn()
   id: string;
+
   @Column()
   title: string;
+
   @Column()
   profile: string;
+
   @Column()
   date: Date;
+
   @Column()
-  organizer: string;
+  organizerName: string;
+
+  @Column()
+  organizerId: number;
+
   @Column()
   location: string;
+
   @Column()
   picture: string;
+
   @Column()
   participantsLimit: number;
+
+  @Column({ default: 1 })
+  status: number; // 1:未开始，0:已结束
+
+  @Column({
+    type: 'simple-enum',
+    enum: ActivityType,
+    default: ActivityType.OTHERS,
+  })
+  type: ActivityType;
+
   @ManyToMany(() => User, user => user.activities)
-  @ManyToMany(() => User, user => user.favoriteActivities)
   participants: User[];
-  comments: Comment[];
+
+  @ManyToMany(() => User, user => user.favoriteActivities)
   favoritedBy: User[];
+
+  @OneToMany(() => Comment, comment => comment.activity)
+  comments: Comment[];
 }

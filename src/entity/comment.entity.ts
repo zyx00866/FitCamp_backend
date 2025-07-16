@@ -1,5 +1,4 @@
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
-
 import { User } from './user.entity';
 import { Activity } from './activity.entity';
 
@@ -12,7 +11,9 @@ export class Comment {
   @Column()
   picture: string;
   @ManyToOne(() => User, user => user.comments)
+  user: User;
   @ManyToOne(() => Activity, activity => activity.comments)
+  activity: Activity;
   @Column()
   starNumber: number;
 }
