@@ -21,7 +21,7 @@ export class User {
   password: string;
   @Column({ default: '' })
   avatar: string;
-  @Column({ default: '' })
+  @Column({ default: '这个用户很懒，还没有简介ᓚᘏᗢ' })
   profile: string;
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   registerTime: Date;

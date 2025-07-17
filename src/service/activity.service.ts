@@ -60,4 +60,9 @@ export class ActivityService {
     }
     return { success: true };
   }
+  // 创建评论
+  async createComment(commentData: Partial<Activity>) {
+    const comment = this.activityRepo.create(commentData);
+    return await this.activityRepo.save(comment);
+  }
 }

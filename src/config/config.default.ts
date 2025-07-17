@@ -8,7 +8,7 @@ export default {
     dataSource: {
       default: {
         type: 'sqlite',
-        database: '/data/fitcamp.sqlite',
+        database: './data/fitcamp.sqlite',
         synchronize: true,
         logging: true,
         entities: [User, Activity, Comment],

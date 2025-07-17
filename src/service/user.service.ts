@@ -43,10 +43,9 @@ export class UserService {
     return await this.userRepo.save(user);
   }
   //更新用户用户名和简介
-  async updateProfile(id: number, name: string, profile: string) {
+  async updateProfile(id: number, data: Partial<User>) {
     const user = await this.userRepo.findOneBy({ id });
-    user.name = name;
-    user.profile = profile;
+    Object.assign(user, data);
     return await this.userRepo.save(user);
   }
 }
