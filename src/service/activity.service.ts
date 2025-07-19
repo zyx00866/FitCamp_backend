@@ -2,11 +2,15 @@ import { Provide } from '@midwayjs/core';
 import { Repository } from 'typeorm';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Activity, ActivityType } from '../entity/activity.entity';
+import { User } from '../entity/user.entity';
+import { Like } from 'typeorm';
 
 @Provide()
 export class ActivityService {
   @InjectEntityModel(Activity)
   activityRepo: Repository<Activity>;
+  @InjectEntityModel(User)
+  userRepo: Repository<User>;
 
   // 创建活动
   async createActivity(activityData: Partial<Activity>) {
@@ -64,5 +68,32 @@ export class ActivityService {
   async createComment(commentData: Partial<Activity>) {
     const comment = this.activityRepo.create(commentData);
     return await this.activityRepo.save(comment);
+  }
+  //报名活动
+  async joinActivity(userId: number, activityId: string) {
+    const activity = await this.activityRepo.findOneBy({ id: activityId });
+    const user = await this.userRepo.findOneBy({ id: userId });
+    if (activity.participants.length >= activity.participantsLimit) {
+      throw new Error('活动已满，无法报名');
+    }
+    activity.participants.push(user);
+    return await this.activityRepo.save(activity);
+  }
+  //收藏活动
+  async favoriteActivity(userId: number, activityId: string) {
+    const activity = await this.activityRepo.findOneBy({ id: activityId });
+    const user = await this.userRepo.findOneBy({ id: userId });
+    if (activity.favoritedBy.some(f => f.id === user.id)) {
+      throw new Error('您已收藏此活动');
+    }
+    activity.favoritedBy.push(user);
+    return await this.activityRepo.save(activity);
+  }
+  //根据字段搜索活动
+  async searchActivities(value: string) {
+    return await this.activityRepo.find({
+      where: { title: Like(`%${value}%`) },
+      relations: ['participants', 'comments', 'favoritedBy'],
+    });
   }
 }

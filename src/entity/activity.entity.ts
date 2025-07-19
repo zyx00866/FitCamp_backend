@@ -1,4 +1,10 @@
-import { Entity, Column, PrimaryColumn, ManyToMany, OneToMany } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  OneToMany,
+} from 'typeorm';
 import { User } from './user.entity';
 import { Comment } from './comment.entity';
 
@@ -15,7 +21,7 @@ export enum ActivityType {
 
 @Entity('activity')
 export class Activity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   id: string;
 
   @Column()
