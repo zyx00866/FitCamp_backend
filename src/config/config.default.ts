@@ -24,5 +24,9 @@ export default {
   koa: {
     port: 7001,
   },
+  jwt: {
+    secret: 'test',
+    expiresIn: '1d',
+  },
   keys: 'temp',
 } as MidwayConfig;
