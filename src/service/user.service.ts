@@ -9,12 +9,12 @@ export class UserService {
   userRepo: Repository<User>;
 
   //注册用户
-  async register(account: string, password: string) {
+  async register(account: string, password: string, name: string) {
     const existing = await this.userRepo.findOneBy({ account });
     if (existing) {
       throw new Error('用户名已经存在');
     }
-    const user = this.userRepo.create({ account, password, name: account });
+    const user = this.userRepo.create({ account, password, name });
     return await this.userRepo.save(user);
   }
   //登录用户

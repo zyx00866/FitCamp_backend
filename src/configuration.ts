@@ -5,8 +5,6 @@ import * as info from '@midwayjs/info';
 import * as swagger from '@midwayjs/swagger';
 import { join } from 'path';
 import * as typeorm from '@midwayjs/typeorm';
-// import { DefaultErrorFilter } from './filter/default.filter';
-// import { NotFoundFilter } from './filter/notfound.filter';
 import { ReportMiddleware } from './middleware/report.middleware';
 import { JWTMiddleware } from './middleware/jwt.middleware';
 import * as cors from '@koa/cors';
@@ -42,7 +40,5 @@ export class MainConfiguration {
     );
     // add middleware
     this.app.useMiddleware([ReportMiddleware, JWTMiddleware]);
-    // add filter
-    // this.app.useFilter([NotFoundFilter, DefaultErrorFilter]);
   }
 }

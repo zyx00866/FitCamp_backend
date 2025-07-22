@@ -1,7 +1,8 @@
-import { Get, Controller, Inject, Query } from '@midwayjs/core';
+import { Get, Controller, Inject } from '@midwayjs/core';
 import { ApiTags } from '@midwayjs/swagger';
 import { UserService } from '../service/user.service';
 import { Validate } from '@midwayjs/validate';
+import { Context as KoaContext } from '@midwayjs/koa';
 
 @ApiTags('user')
 @Controller('/user')
@@ -11,7 +12,8 @@ export class GetUserInfoController {
 
   @Get('/userInfo')
   @Validate()
-  async getUserInfo(@Query('id') id: number) {
+  async getUserInfo(ctx: KoaContext) {
+    const id = ctx.state.user.id;
     try {
       // 调用用户服务获取用户信息
       const user = await this.userService.getUserInfo(id);

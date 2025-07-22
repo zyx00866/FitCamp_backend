@@ -6,6 +6,7 @@ import { Validate } from '@midwayjs/validate';
 export class RegisterDTO {
   account: string;
   password: string;
+  name: string;
 }
 
 @ApiTags('user')
@@ -18,18 +19,18 @@ export class RegisterController {
   @Validate()
   async register(@Body() body: RegisterDTO) {
     try {
-      const { account, password } = body;
+      const { account, password, name } = body;
 
-      if (!account || !password) {
+      if (!account || !password || !name) {
         return {
           success: false,
-          message: '用户名和密码不能为空',
+          message: '账号，用户名，密码不能为空',
           data: null,
         };
       }
 
       // 调用用户服务进行注册
-      const user = await this.userService.register(account, password);
+      const user = await this.userService.register(account, password, name);
 
       // 返回成功响应（不包含密码）
       const { password: _, ...userInfo } = user;

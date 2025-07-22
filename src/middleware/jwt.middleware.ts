@@ -14,7 +14,7 @@ export class JWTMiddleware implements IMiddleware<Context, NextFunction> {
   resolve() {
     return async (ctx: Context, next: NextFunction) => {
       // 白名单路由，不需要验证JWT
-      const whiteList = ['/user/register', '/user/login', '/swagger-ui', '/'];
+      const whiteList = ['/user/register', '/swagger-ui', '/user/login'];
 
       // 检查是否在白名单中
       const isInWhiteList = whiteList.some(
@@ -25,7 +25,6 @@ export class JWTMiddleware implements IMiddleware<Context, NextFunction> {
         await next();
         return;
       }
-
       // 从请求头中获取token
       const authorization = ctx.headers.authorization;
 
@@ -57,13 +56,10 @@ export class JWTMiddleware implements IMiddleware<Context, NextFunction> {
         // 验证token
         const decoded = jwt.verify(token, this.jwtConfig.secret) as any;
 
-        // 将用户信息添加到上下文中，供后续使用
+        // 只存储确定存在的id
         ctx.state.user = {
           id: decoded.id,
-          account: decoded.account,
-          name: decoded.name,
         };
-
         await next();
       } catch (error) {
         ctx.status = 401;
