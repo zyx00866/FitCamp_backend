@@ -9,7 +9,8 @@ import { ReportMiddleware } from './middleware/report.middleware';
 import { JWTMiddleware } from './middleware/jwt.middleware';
 import * as cors from '@koa/cors';
 import * as jwt from '@midwayjs/jwt';
-
+import * as upload from '@midwayjs/upload';
+import * as staticFile from '@midwayjs/static-file';
 @Configuration({
   imports: [
     koa,
@@ -22,6 +23,8 @@ import * as jwt from '@midwayjs/jwt';
     typeorm,
     cors,
     jwt,
+    upload,
+    staticFile,
   ],
   importConfigs: [join(__dirname, './config')],
 })

@@ -15,18 +15,38 @@ export default {
       },
     },
   },
+
   swagger: {
     title: 'FitCamp API',
     description: '暑期课程大作业体育活动室后端接口文档',
     version: '1.0.0',
     include: ['src/controller'],
   },
+
   koa: {
     port: 7001,
   },
+
   jwt: {
     secret: 'test',
     expiresIn: '1d',
+  },
+
+  upload: {
+    mode: 'file',
+    fileSize: '10mb',
+    fileExtensions: ['.jpg', '.jpeg', '.png', '.gif'],
+    tmpdir: './data/tempImages',
+  },
+
+  staticFile: {
+    dirs: {
+      default: {
+        prefix: '/static/',
+        dir: './data/pictures',
+        gzip: true,
+      },
+    },
   },
   keys: 'temp',
 } as MidwayConfig;
