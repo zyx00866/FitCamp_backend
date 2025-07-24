@@ -15,7 +15,7 @@ export class ActivityService {
   // 创建活动
   async createActivity(activityData: Partial<Activity>) {
     const activity = this.activityRepo.create(activityData);
-    return await this.activityRepo.save(activity);
+    return await { success: true, data: this.activityRepo.save(activity) };
   }
 
   // 获取活动列表

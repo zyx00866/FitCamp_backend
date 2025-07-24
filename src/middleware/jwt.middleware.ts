@@ -14,7 +14,13 @@ export class JWTMiddleware implements IMiddleware<Context, NextFunction> {
   resolve() {
     return async (ctx: Context, next: NextFunction) => {
       // 白名单路由，不需要验证JWT
-      const whiteList = ['/user/register', '/swagger-ui', '/user/login'];
+      const whiteList = [
+        '/user/register',
+        '/swagger-ui',
+        '/user/login',
+        '/activity/list',
+        '/activity/detail',
+      ];
 
       // 检查是否在白名单中
       const isInWhiteList = whiteList.some(

@@ -57,13 +57,19 @@ export class UploadImageController {
       const categoryPath = this.getCategoryPath(category);
       const uploadDir = join(process.cwd(), 'data', 'pictures', categoryPath);
 
+      // 确保目录存在
+      if (!existsSync(uploadDir)) {
+        mkdirSync(uploadDir, { recursive: true });
+        console.log('✅ 创建目录:', uploadDir);
+      }
+
       // 生成唯一文件名
       const fileName = `${uuidv4()}${fileExt}`;
       const finalPath = join(uploadDir, fileName);
 
       console.log('📄 最终保存路径:', finalPath);
 
-      //复制临时文件到目标路径
+      // 复制临时文件到目标路径
       const readStream = createReadStream(file.data); // file.data 是临时文件路径
       const writeStream = createWriteStream(finalPath);
 
@@ -73,12 +79,12 @@ export class UploadImageController {
       // 等待复制完成
       await new Promise((resolve, reject) => {
         writeStream.on('finish', () => {
-          console.log('文件复制完成');
+          console.log('✅ 文件复制完成');
 
           // 删除临时文件
           try {
             unlinkSync(file.data);
-            console.log('临时文件已删除:', file.data);
+            console.log('🗑️ 临时文件已删除:', file.data);
           } catch (error) {
             console.warn('⚠️ 删除临时文件失败:', error.message);
           }
@@ -109,117 +115,6 @@ export class UploadImageController {
       return {
         success: false,
         message: '上传失败',
-        data: null,
-      };
-    }
-  }
-
-  @Post('/images/batch')
-  async uploadImages(@Files() files: any[], @Fields() fields: any) {
-    try {
-      console.log('📁 接收到的文件数组:', files);
-      console.log('📁 文件数量:', files?.length || 0);
-
-      if (!files || files.length === 0) {
-        return {
-          success: false,
-          message: '请选择要上传的图片',
-          data: null,
-        };
-      }
-
-      const category = fields?.category || 'other';
-      const uploadResults = [];
-
-      // 遍历所有上传的文件
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        console.log(`📄 处理第 ${i + 1} 个文件:`, file.filename);
-
-        // 验证文件类型
-        const allowedTypes = ['.jpg', '.jpeg', '.png', '.gif'];
-        const fileExt = extname(file.filename).toLowerCase();
-
-        if (!allowedTypes.includes(fileExt)) {
-          uploadResults.push({
-            filename: file.filename,
-            success: false,
-            message: '文件类型不支持',
-          });
-          continue;
-        }
-
-        // 验证文件大小
-        const maxSize = 10 * 1024 * 1024;
-        if (file.data.length > maxSize) {
-          uploadResults.push({
-            filename: file.filename,
-            success: false,
-            message: '文件大小超过限制',
-          });
-          continue;
-        }
-
-        try {
-          const categoryPath = this.getCategoryPath(category);
-          const uploadDir = join(
-            process.cwd(),
-            'data',
-            'pictures',
-            categoryPath
-          );
-
-          if (!existsSync(uploadDir)) {
-            mkdirSync(uploadDir, { recursive: true });
-          }
-
-          const fileName = `${uuidv4()}${fileExt}`;
-          const filePath = join(uploadDir, fileName);
-
-          const writeStream = createWriteStream(filePath);
-          writeStream.write(file.data);
-          writeStream.end();
-
-          await new Promise((resolve, reject) => {
-            writeStream.on('finish', resolve);
-            writeStream.on('error', reject);
-          });
-
-          const relativePath = `/static/${categoryPath}/${fileName}`;
-
-          uploadResults.push({
-            filename: fileName,
-            originalName: file.filename,
-            path: relativePath,
-            category: category,
-            size: file.data.length,
-            success: true,
-            url: `http://localhost:7001${relativePath}`,
-          });
-
-          console.log(`✅ 第 ${i + 1} 个文件上传成功`);
-        } catch (error) {
-          console.error(`❌ 第 ${i + 1} 个文件上传失败:`, error);
-          uploadResults.push({
-            filename: file.filename,
-            success: false,
-            message: '上传失败',
-          });
-        }
-      }
-
-      return {
-        success: true,
-        message: `批量上传完成，成功：${
-          uploadResults.filter(r => r.success).length
-        }，失败：${uploadResults.filter(r => !r.success).length}`,
-        data: uploadResults,
-      };
-    } catch (error) {
-      console.error('批量上传错误:', error);
-      return {
-        success: false,
-        message: '批量上传失败',
         data: null,
       };
     }

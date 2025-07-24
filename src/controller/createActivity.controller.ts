@@ -9,7 +9,7 @@ export class ActivityDTO {
   profile: string;
   date: Date;
   location: string;
-  picture: string;
+  picture: string; //sqlite 不支持数组，这里使用字符串存储图片链接，链接之间用逗号分隔
   participantsLimit: number;
   type: ActivityType;
   organizerName: string;
