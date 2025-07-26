@@ -16,11 +16,28 @@ export class FavouriteActivityController {
   ) {
     const { userId, activityId } = body;
     try {
-      return await this.activityService.joinActivity(userId, activityId);
+      return await this.activityService.favouriteActivity(userId, activityId);
     } catch (error) {
       return {
         success: false,
         message: error.message || '收藏活动失败',
+        data: null,
+      };
+    }
+  }
+
+  @Post('/unfavourite')
+  @Validate()
+  async unfavouriteActivity(
+    @Body() body: { userId: number; activityId: string }
+  ) {
+    const { userId, activityId } = body;
+    try {
+      return await this.activityService.unfavouriteActivity(userId, activityId);
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || '取消收藏活动失败',
         data: null,
       };
     }

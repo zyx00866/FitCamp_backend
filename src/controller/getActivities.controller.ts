@@ -1,8 +1,8 @@
 import { Get, Controller, Inject, Query } from '@midwayjs/core';
-import { ApiTags } from '@midwayjs/swagger';
+import { ApiTags, ApiOperation, ApiQuery } from '@midwayjs/swagger';
 import { ActivityService } from '../service/activity.service';
-import { Validate } from '@midwayjs/validate';
 import { ActivityType } from '../entity/activity.entity';
+import { Validate } from '@midwayjs/validate';
 
 @ApiTags('activity')
 @Controller('/activity')
@@ -11,16 +11,42 @@ export class GetActivitiesController {
   activityService: ActivityService;
 
   @Get('/list')
-  @Validate()
-  async getActivities(@Query('type') type: ActivityType) {
+  @ApiOperation({ summary: '获取活动列表' })
+  @ApiQuery({ name: 'page', required: false, description: '页码，默认1' })
+  @ApiQuery({ name: 'limit', required: false, description: '每页数量，默认20' })
+  @ApiQuery({ name: 'type', required: false, description: '活动类型' })
+  @ApiQuery({ name: 'keyword', required: false, description: '搜索关键词' })
+  async getActivities(
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+    @Query('type') type?: ActivityType,
+    @Query('keyword') keyword?: string
+  ) {
     try {
-      const activities = await this.activityService.getActivities(type);
+      console.log('📋 获取活动列表请求参数:', {
+        page: page,
+        limit: limit,
+        type: type,
+      });
+
+      // 转换参数类型
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 20;
+
+      const result = await this.activityService.getActivities(
+        pageNum,
+        limitNum,
+        type,
+        keyword
+      );
+
       return {
         success: true,
         message: '获取活动列表成功',
-        data: activities,
+        data: result,
       };
     } catch (error) {
+      console.error('获取活动列表错误:', error);
       return {
         success: false,
         message: error.message || '获取活动列表失败',

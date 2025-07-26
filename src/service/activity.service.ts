@@ -3,97 +3,289 @@ import { Repository } from 'typeorm';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Activity, ActivityType } from '../entity/activity.entity';
 import { User } from '../entity/user.entity';
-import { Like } from 'typeorm';
 
 @Provide()
 export class ActivityService {
   @InjectEntityModel(Activity)
   activityRepo: Repository<Activity>;
+
   @InjectEntityModel(User)
   userRepo: Repository<User>;
 
   // 创建活动
-  async createActivity(activityData: Partial<Activity>) {
-    const activity = this.activityRepo.create(activityData);
-    return await { success: true, data: this.activityRepo.save(activity) };
+  async createActivity(activityData: any, creatorId: number) {
+    const creator = await this.userRepo.findOneBy({ id: creatorId });
+
+    if (!creator) {
+      throw new Error('创建者不存在');
+    }
+
+    const activity = this.activityRepo.create({
+      ...activityData,
+      creator: creator,
+    });
+
+    const savedActivity = await this.activityRepo.save(activity);
+    return { success: true, data: savedActivity };
   }
 
   // 获取活动列表
-  async getActivities(type?: string) {
-    // 如果没有指定类型或类型为'全部'，返回所有活动
-    if (!type || type === '全部') {
-      return await this.activityRepo.find({
-        relations: ['participants', 'comments', 'favoritedBy'],
-      });
+  async getActivities(
+    page = 1,
+    limit = 20,
+    type?: ActivityType,
+    keyword?: string,
+    sortBy = 'createTime', // ✅ 新增排序字段参数
+    sortOrder: 'ASC' | 'DESC' = 'DESC' // ✅ 新增排序方向参数
+  ) {
+    // 参数验证
+    if (page < 1) page = 1;
+    if (limit < 1) limit = 20;
+    if (limit > 100) limit = 100; // 限制最大每页数量
+
+    const offset = (page - 1) * limit;
+
+    const queryBuilder = this.activityRepo
+      .createQueryBuilder('activity')
+      .leftJoinAndSelect('activity.creator', 'creator')
+      .leftJoinAndSelect('activity.participants', 'participants')
+      .leftJoinAndSelect('activity.favoritedBy', 'favoritedBy');
+
+    // 类型过滤
+    if (type) {
+      queryBuilder.andWhere('activity.type = :type', { type });
     }
 
-    // 根据指定类型筛选活动
-    return await this.activityRepo.find({
-      where: { type: type as ActivityType },
-      relations: ['participants', 'comments', 'favoritedBy'],
-    });
+    // 关键词搜索
+    if (keyword && keyword.trim()) {
+      queryBuilder.andWhere(
+        '(activity.name LIKE :keyword OR activity.description LIKE :keyword)',
+        { keyword: `%${keyword.trim()}%` }
+      );
+    }
+
+    // ✅ 动态排序
+    const allowedSortFields = [
+      'createTime',
+      'name',
+      'activityTime',
+      'participantsLimit',
+    ];
+    const validSortBy = allowedSortFields.includes(sortBy)
+      ? sortBy
+      : 'createTime';
+
+    queryBuilder.orderBy(`activity.${validSortBy}`, sortOrder);
+
+    const [activities, total] = await queryBuilder
+      .skip(offset)
+      .take(limit)
+      .getManyAndCount();
+
+    return {
+      activities,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page < Math.ceil(total / limit),
+      hasPrev: page > 1,
+    };
   }
 
   // 获取单个活动详情
   async getActivityById(id: string) {
-    const activity = await this.activityRepo.findOne({
+    return await this.activityRepo.findOne({
       where: { id },
-      relations: ['participants', 'comments', 'favoritedBy'],
+      relations: ['participants', 'favoritedBy', 'creator', 'comments'], // 添加 creator 关系
     });
+  }
+
+  // 获取用户创建的活动
+  async getActivitiesByCreator(creatorId: number) {
+    const activities = await this.activityRepo.find({
+      where: { creator: { id: creatorId } },
+      relations: ['participants', 'favoritedBy', 'creator'],
+    });
+
+    return {
+      activities,
+      total: activities.length,
+    };
+  }
+
+  // 检查用户是否可以编辑活动
+  async canUserEditActivity(
+    userId: number,
+    activityId: string
+  ): Promise<boolean> {
+    const activity = await this.activityRepo.findOne({
+      where: { id: activityId },
+      relations: ['creator'],
+    });
+
     if (!activity) {
-      throw new Error('活动不存在');
+      return false;
     }
-    return activity;
+
+    return activity.creator.id === userId;
   }
 
   // 更新活动信息
-  async updateActivity(id: string, updateData: Partial<Activity>) {
-    let activity = await this.activityRepo.findOneBy({ id });
+  async updateActivity(activityId: string, updateData: any, userId: number) {
+    const activity = await this.activityRepo.findOne({
+      where: { id: activityId },
+      relations: ['creator'],
+    });
+
     if (!activity) {
       throw new Error('活动不存在');
     }
-    activity = Object.assign(activity, updateData);
+
+    // 检查权限：只有创建者可以修改
+    if (activity.creator.id !== userId) {
+      throw new Error('您没有权限修改此活动');
+    }
+
+    // 更新活动信息
+    Object.assign(activity, updateData);
+
     return await this.activityRepo.save(activity);
   }
 
   // 删除活动
-  async deleteActivity(id: string) {
-    const result = await this.activityRepo.delete(id);
-    if (result.affected === 0) {
-      throw new Error('活动不存在或已被删除');
+  async deleteActivity(activityId: string, userId: number) {
+    const activity = await this.activityRepo.findOne({
+      where: { id: activityId },
+      relations: ['creator'],
+    });
+
+    if (!activity) {
+      throw new Error('活动不存在');
     }
-    return { success: true };
+
+    if (activity.creator.id !== userId) {
+      throw new Error('您没有权限删除此活动');
+    }
+
+    const result = await this.activityRepo.remove(activity);
+    return { success: true, data: result };
   }
+
   // 创建评论
   async createComment(commentData: Partial<Activity>) {
     const comment = this.activityRepo.create(commentData);
-    return await this.activityRepo.save(comment);
+    return await { success: true, data: this.activityRepo.save(comment) };
   }
+
   //报名活动
   async joinActivity(userId: number, activityId: string) {
-    const activity = await this.activityRepo.findOneBy({ id: activityId });
+    const activity = await this.activityRepo.findOne({
+      where: { id: activityId },
+      relations: ['participants'],
+    });
+
     const user = await this.userRepo.findOneBy({ id: userId });
+
+    if (!activity) {
+      throw new Error('活动不存在');
+    }
+
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    const isAlreadyJoined = activity.participants.some(p => p.id === user.id);
+    if (isAlreadyJoined) {
+      throw new Error('您已报名此活动');
+    }
+
     if (activity.participants.length >= activity.participantsLimit) {
       throw new Error('活动已满，无法报名');
     }
+
     activity.participants.push(user);
-    return await this.activityRepo.save(activity);
+    const result = await this.activityRepo.save(activity);
+    return { success: true, data: result };
   }
-  //收藏活动
-  async favoriteActivity(userId: number, activityId: string) {
-    const activity = await this.activityRepo.findOneBy({ id: activityId });
+
+  //取消报名
+  async leaveActivity(userId: number, activityId: string) {
+    const activity = await this.activityRepo.findOne({
+      where: { id: activityId },
+      relations: ['participants'],
+    });
+
     const user = await this.userRepo.findOneBy({ id: userId });
+
+    if (!activity) {
+      throw new Error('活动不存在');
+    }
+
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    const index = activity.participants.findIndex(p => p.id === user.id);
+    if (index === -1) {
+      throw new Error('您未报名此活动');
+    }
+
+    activity.participants.splice(index, 1);
+    const result = await this.activityRepo.save(activity);
+    return { success: true, data: result };
+  }
+
+  //收藏活动
+  async favouriteActivity(userId: number, activityId: string) {
+    const activity = await this.activityRepo.findOne({
+      where: { id: activityId },
+      relations: ['favoritedBy'],
+    });
+
+    const user = await this.userRepo.findOneBy({ id: userId });
+
+    if (!activity) {
+      throw new Error('活动不存在');
+    }
+
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
     if (activity.favoritedBy.some(f => f.id === user.id)) {
       throw new Error('您已收藏此活动');
     }
+
     activity.favoritedBy.push(user);
-    return await this.activityRepo.save(activity);
+    const result = await this.activityRepo.save(activity);
+    return { success: true, data: result };
   }
-  //根据字段搜索活动
-  async searchActivities(value: string) {
-    return await this.activityRepo.find({
-      where: { title: Like(`%${value}%`) },
-      relations: ['participants', 'comments', 'favoritedBy'],
+
+  //取消收藏
+  async unfavouriteActivity(userId: number, activityId: string) {
+    const activity = await this.activityRepo.findOne({
+      where: { id: activityId },
+      relations: ['favoritedBy'],
     });
+
+    const user = await this.userRepo.findOneBy({ id: userId });
+
+    if (!activity) {
+      throw new Error('活动不存在');
+    }
+
+    if (!user) {
+      throw new Error('用户不存在');
+    }
+
+    const index = activity.favoritedBy.findIndex(f => f.id === user.id);
+    if (index === -1) {
+      throw new Error('您未收藏此活动');
+    }
+
+    activity.favoritedBy.splice(index, 1);
+    const result = await this.activityRepo.save(activity);
+    return { success: true, data: result };
   }
 }

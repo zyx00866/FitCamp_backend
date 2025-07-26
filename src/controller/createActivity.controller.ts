@@ -13,7 +13,8 @@ export class ActivityDTO {
   participantsLimit: number;
   type: ActivityType;
   organizerName: string;
-  organizerId: number;
+  fee: number;
+  createTime: Date;
 }
 
 @ApiTags(['activity'])
@@ -24,7 +25,10 @@ export class CreateActivityController {
 
   @Post('/create')
   @Validate()
-  async createActivity(@Body() activityDTO: ActivityDTO) {
-    return await this.activityService.createActivity(activityDTO);
+  async createActivity(
+    @Body() activityDTO: ActivityDTO,
+    @Body('creatorId') creatorId: number
+  ) {
+    return await this.activityService.createActivity(activityDTO, creatorId);
   }
 }

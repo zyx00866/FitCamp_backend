@@ -4,6 +4,8 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   OneToMany,
+  ManyToOne,
+  CreateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Comment } from './comment.entity';
@@ -37,9 +39,6 @@ export class Activity {
   organizerName: string;
 
   @Column()
-  organizerId: number;
-
-  @Column()
   location: string;
 
   @Column()
@@ -50,6 +49,12 @@ export class Activity {
 
   @Column({ default: 1 })
   status: number; // 1:未开始，0:已结束
+
+  @Column()
+  fee: number;
+
+  @CreateDateColumn()
+  createTime: Date;
 
   @Column({
     type: 'simple-enum',
@@ -66,4 +71,7 @@ export class Activity {
 
   @OneToMany(() => Comment, comment => comment.activity)
   comments: Comment[];
+
+  @ManyToOne(() => User, user => user.createdActivities)
+  creator: User;
 }

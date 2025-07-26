@@ -33,4 +33,6 @@ export class User {
   @ManyToMany(() => Activity, activity => activity.favoritedBy)
   @JoinTable()
   favoriteActivities: Activity[];
+  @OneToMany(() => Activity, activity => activity.creator)
+  createdActivities: Activity[];
 }

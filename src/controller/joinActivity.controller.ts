@@ -23,4 +23,18 @@ export class SignUpActivityController {
       };
     }
   }
+  @Post('/leave')
+  @Validate()
+  async leaveActivity(@Body() body: { userId: number; activityId: string }) {
+    const { userId, activityId } = body;
+    try {
+      return await this.activityService.leaveActivity(userId, activityId);
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || '取消报名活动失败',
+        data: null,
+      };
+    }
+  }
 }
