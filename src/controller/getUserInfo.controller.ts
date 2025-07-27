@@ -19,7 +19,7 @@ export class GetUserInfoController {
       const user = await this.userService.getUserInfo(id);
 
       // 返回成功响应（不包含密码）
-      const { password: _, ...userInfo } = user;
+      const { password: _, ...userInfo } = user.data;
 
       return {
         success: true,

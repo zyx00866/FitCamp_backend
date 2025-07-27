@@ -31,7 +31,7 @@ export class UpdateUserAvatarController {
       }
       // 获取用户当前信息（包含旧头像）
       const currentUser = await this.userService.getUserInfo(userId);
-      const oldAvatar = currentUser.avatar;
+      const oldAvatar = currentUser.data.avatar;
 
       // 调用用户服务更新用户头像
       const updatedUser = await this.userService.updateAvatar(userId, avatar);

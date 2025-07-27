@@ -1,7 +1,8 @@
-import { Provide, Config } from '@midwayjs/core';
+import { Provide, Config, Inject } from '@midwayjs/core';
 import { IMiddleware } from '@midwayjs/core';
 import { Context, NextFunction } from '@midwayjs/koa';
 import * as jwt from 'jsonwebtoken';
+import { SessionService } from '../service/session.service';
 
 @Provide()
 export class JWTMiddleware implements IMiddleware<Context, NextFunction> {
@@ -10,6 +11,9 @@ export class JWTMiddleware implements IMiddleware<Context, NextFunction> {
     secret: string;
     expiresIn: string;
   };
+
+  @Inject()
+  sessionService: SessionService;
 
   resolve() {
     return async (ctx: Context, next: NextFunction) => {
@@ -62,9 +66,20 @@ export class JWTMiddleware implements IMiddleware<Context, NextFunction> {
         // 验证token
         const decoded = jwt.verify(token, this.jwtConfig.secret) as any;
 
-        // 只存储确定存在的id
+        const session = await this.sessionService.validateSession(token);
+        if (!session) {
+          ctx.status = 401;
+          ctx.body = {
+            success: false,
+            message: '会话已过期，请重新登录',
+            code: 401,
+          };
+          return;
+        }
+
         ctx.state.user = {
-          id: decoded.id,
+          id: decoded.userId,
+          sessionId: session.id,
         };
         await next();
       } catch (error) {

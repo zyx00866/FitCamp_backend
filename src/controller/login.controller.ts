@@ -32,21 +32,7 @@ export class LoginController {
         };
       }
 
-      // 调用用户服务进行登录
-      const user = await this.userService.login(account, password);
-
-      // 返回成功响应（不包含密码）
-      const { password: _, ...userInfo } = user;
-      // 生成 JWT token
-      const token = await this.jwtService.sign({ id: user.id });
-      return {
-        success: true,
-        message: '登录成功',
-        data: {
-          user: userInfo,
-          token,
-        },
-      };
+      return await this.userService.login(account, password);
     } catch (error) {
       // 处理错误，如用户不存在或密码错误
       return {

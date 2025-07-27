@@ -2,6 +2,7 @@ import { MidwayConfig } from '@midwayjs/core';
 import { User } from '../entity/user.entity';
 import { Activity } from '../entity/activity.entity';
 import { Comment } from '../entity/comment.entity';
+import { UserSession } from '../entity/userSession.entity';
 
 export default {
   typeorm: {
@@ -11,7 +12,7 @@ export default {
         database: './data/fitcamp.sqlite',
         synchronize: true,
         logging: true,
-        entities: [User, Activity, Comment],
+        entities: [User, Activity, Comment, UserSession],
       },
     },
   },

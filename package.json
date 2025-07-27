@@ -16,6 +16,8 @@
     "@midwayjs/typeorm": "^3.20.4",
     "@midwayjs/upload": "^3.20.5",
     "@midwayjs/validate": "^3.12.0",
+    "@midwayjs/web": "^3.20.4",
+    "bcryptjs": "^3.0.2",
     "jsonwebtoken": "^9.0.2",
     "sqlite3": "^5.1.7",
     "typeorm": "^0.3.25",
