@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import { InjectEntityModel } from '@midwayjs/typeorm';
 import { Activity, ActivityType } from '../entity/activity.entity';
 import { User } from '../entity/user.entity';
+import { Comment } from '../entity/comment.entity';
 
 @Provide()
 export class ActivityService {
@@ -11,6 +12,9 @@ export class ActivityService {
 
   @InjectEntityModel(User)
   userRepo: Repository<User>;
+
+  @InjectEntityModel(Comment)
+  commentRepo: Repository<Comment>;
 
   // 创建活动
   async createActivity(activityData: any, creatorId: number) {
@@ -173,9 +177,9 @@ export class ActivityService {
   }
 
   // 创建评论
-  async createComment(commentData: Partial<Activity>) {
-    const comment = this.activityRepo.create(commentData);
-    return await { success: true, data: this.activityRepo.save(comment) };
+  async createComment(commentData: Partial<Comment>) {
+    const comment = this.commentRepo.create(commentData);
+    return await { success: true, data: this.commentRepo.save(comment) };
   }
 
   //报名活动
