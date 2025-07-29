@@ -17,9 +17,10 @@ export class ActivityService {
   commentRepo: Repository<Comment>;
 
   // 创建活动
-  async createActivity(activityData: any, creatorId: number) {
-    const creator = await this.userRepo.findOneBy({ id: creatorId });
-
+  async createActivity(activityData: any) {
+    const creator = await this.userRepo.findOneBy({
+      id: activityData.creatorId,
+    });
     if (!creator) {
       throw new Error('创建者不存在');
     }
@@ -63,7 +64,7 @@ export class ActivityService {
     // 关键词搜索
     if (keyword && keyword.trim()) {
       queryBuilder.andWhere(
-        '(activity.name LIKE :keyword OR activity.description LIKE :keyword)',
+        '(activity.title LIKE :keyword OR activity.profile LIKE :keyword OR activity.organizerName LIKE :keyword OR activity.location LIKE :keyword)',
         { keyword: `%${keyword.trim()}%` }
       );
     }
@@ -71,7 +72,7 @@ export class ActivityService {
     // ✅ 动态排序
     const allowedSortFields = [
       'createTime',
-      'name',
+      'title',
       'activityTime',
       'participantsLimit',
     ];
@@ -136,7 +137,7 @@ export class ActivityService {
   }
 
   // 更新活动信息
-  async updateActivity(activityId: string, updateData: any, userId: number) {
+  async updateActivity(activityId: string, updateData: any) {
     const activity = await this.activityRepo.findOne({
       where: { id: activityId },
       relations: ['creator'],
@@ -144,36 +145,70 @@ export class ActivityService {
 
     if (!activity) {
       throw new Error('活动不存在');
-    }
-
-    // 检查权限：只有创建者可以修改
-    if (activity.creator.id !== userId) {
-      throw new Error('您没有权限修改此活动');
     }
 
     // 更新活动信息
     Object.assign(activity, updateData);
 
-    return await this.activityRepo.save(activity);
+    return await { success: true, data: this.activityRepo.save(activity) };
   }
 
-  // 删除活动
-  async deleteActivity(activityId: string, userId: number) {
-    const activity = await this.activityRepo.findOne({
-      where: { id: activityId },
-      relations: ['creator'],
+  // 删除活动（级联清理所有关联数据）
+  async deleteActivity(activityId: string) {
+    return await this.activityRepo.manager.transaction(async manager => {
+      console.log('开始删除活动:', activityId);
+      // 查找活动及其所有关联
+      const activity = await manager.findOne(Activity, {
+        where: { id: activityId },
+        relations: ['comments', 'participants', 'favoritedBy', 'creator'],
+      });
+      console.log('删除活动前检查:', activity);
+      if (!activity) {
+        throw new Error('活动不存在');
+      }
+
+      // 1. 删除活动的所有评论
+      if (activity.comments && activity.comments.length > 0) {
+        await manager.delete(Comment, { activity: { id: activityId } });
+      }
+      console.log('删除评论成功');
+      // 2. 清空参与者关系（推荐用关系API）
+      if (activity.participants && activity.participants.length > 0) {
+        await manager
+          .createQueryBuilder()
+          .relation(Activity, 'participants')
+          .of(activityId)
+          .remove(activity.participants.map(p => p.id));
+      }
+      console.log('清空参与者关系成功');
+      // 3. 清空收藏者关系（推荐用关系API）
+      if (activity.favoritedBy && activity.favoritedBy.length > 0) {
+        await manager
+          .createQueryBuilder()
+          .relation(Activity, 'favoritedBy')
+          .of(activityId)
+          .remove(activity.favoritedBy.map(u => u.id));
+      }
+      console.log('清空收藏者关系成功');
+      //4. 删除创建者关系
+      if (activity.creator) {
+        await manager
+          .createQueryBuilder()
+          .relation(Activity, 'creator')
+          .of(activityId)
+          .set(null); // 清除创建者关系
+      }
+      console.log('清空创建者关系成功');
+      // 4. 删除活动本身
+      await manager.delete(Activity, { id: activityId });
+      console.log('删除活动成功');
+      // 5. 删除后确认
+      const check = await manager.findOne(Activity, {
+        where: { id: activityId },
+      });
+
+      return { success: !check };
     });
-
-    if (!activity) {
-      throw new Error('活动不存在');
-    }
-
-    if (activity.creator.id !== userId) {
-      throw new Error('您没有权限删除此活动');
-    }
-
-    const result = await this.activityRepo.remove(activity);
-    return { success: true, data: result };
   }
 
   // 创建评论

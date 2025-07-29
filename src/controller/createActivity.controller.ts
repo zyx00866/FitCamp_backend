@@ -5,6 +5,7 @@ import { Validate } from '@midwayjs/validate';
 import { ActivityType } from '../entity/activity.entity';
 
 export class ActivityDTO {
+  id?: string; // 可选，用于更新活动时传入
   title: string;
   profile: string;
   date: Date;
@@ -15,6 +16,7 @@ export class ActivityDTO {
   organizerName: string;
   fee: number;
   createTime: Date;
+  creatorId: number; // 创建者的用户ID
 }
 
 @ApiTags(['activity'])
@@ -25,10 +27,21 @@ export class CreateActivityController {
 
   @Post('/create')
   @Validate()
-  async createActivity(
-    @Body() activityDTO: ActivityDTO,
-    @Body('creatorId') creatorId: number
-  ) {
-    return await this.activityService.createActivity(activityDTO, creatorId);
+  async createActivity(@Body() activityDTO: ActivityDTO) {
+    return await this.activityService.createActivity(activityDTO);
+  }
+
+  @Post('/update')
+  @Validate()
+  async updateActivity(@Body() activityDTO: ActivityDTO) {
+    const { id, ...updateData } = activityDTO;
+    return await this.activityService.updateActivity(id, updateData);
+  }
+
+  @Post('/delete')
+  @Validate()
+  async deleteActivity(@Body() body: { id: string }) {
+    const { id } = body;
+    return await this.activityService.deleteActivity(id);
   }
 }

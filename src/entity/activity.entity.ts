@@ -47,9 +47,6 @@ export class Activity {
   @Column()
   participantsLimit: number;
 
-  @Column({ default: 1 })
-  status: number; // 1:未开始，0:已结束
-
   @Column()
   fee: number;
 
