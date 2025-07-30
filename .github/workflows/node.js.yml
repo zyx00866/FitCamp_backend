@@ -35,4 +35,4 @@ jobs:
           fi
 
       - name: Run tests
-        run: npm test
+        run: npm test -detectOpenHandles
