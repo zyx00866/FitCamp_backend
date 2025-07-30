@@ -18,7 +18,7 @@ export enum ActivityType {
   BASKETBALL = '篮球',
   FOOTBALL = '足球',
   BADMINTON = '羽毛球',
-  OTHERS = '其他',
+  OTHERS = '其它',
 }
 
 @Entity('activity')
