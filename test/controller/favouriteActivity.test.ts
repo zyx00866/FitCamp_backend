@@ -1,5 +1,6 @@
 import * as request from 'supertest';
 import { createApp } from '@midwayjs/mock';
+import { exit } from 'process';
 
 describe('收藏/取消收藏活动 API', () => {
   let app;
