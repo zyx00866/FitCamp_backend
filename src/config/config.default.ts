@@ -3,13 +3,14 @@ import { User } from '../entity/user.entity';
 import { Activity } from '../entity/activity.entity';
 import { Comment } from '../entity/comment.entity';
 import { UserSession } from '../entity/userSession.entity';
+import { join } from 'path';
 
 export default {
   typeorm: {
     dataSource: {
       default: {
         type: 'sqlite',
-        database: './data/fitcamp.sqlite',
+        database: join(process.cwd(), 'data', 'fitcamp.sqlite'),
         synchronize: true,
         logging: true,
         entities: [User, Activity, Comment, UserSession],
@@ -45,12 +46,16 @@ export default {
 
   staticFile: {
     dirs: {
-      default: {
+      pictures: {
         prefix: '/static/',
         dir: './data/pictures',
         gzip: true,
       },
+      frontend: {
+        prefix: '/',
+        dir: './public',
+      }
     },
   },
   keys: 'temp',
-} as MidwayConfig;
+  } as MidwayConfig;

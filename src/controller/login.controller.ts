@@ -3,6 +3,7 @@ import { ApiTags } from '@midwayjs/swagger';
 import { UserService } from '../service/user.service';
 import { JwtService } from '@midwayjs/jwt';
 import { Validate } from '@midwayjs/validate';
+import { join } from 'path';
 
 export class LoginDTO {
   account: string;
@@ -22,6 +23,7 @@ export class LoginController {
   @Validate()
   async login(@Body() body: LoginDTO) {
     try {
+      console.log('数据库路径:', join(__dirname, '../data/fitcamp.sqlite'));
       const { account, password } = body;
 
       if (!account || !password) {

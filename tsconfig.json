@@ -19,10 +19,11 @@
     "rootDir": "src"
   },
   "exclude": [
-    "*.js",
     "*.ts",
+    "*.js",
     "dist",
     "node_modules",
-    "test"
+    "test",
+    "build"
   ]
 }
