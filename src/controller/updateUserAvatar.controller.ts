@@ -1,4 +1,4 @@
-import { Post, Controller, Inject, Body } from '@midwayjs/core';
+import { Put, Controller, Inject, Body } from '@midwayjs/core';
 import { ApiTags } from '@midwayjs/swagger';
 import { UserService } from '../service/user.service';
 import { Validate } from '@midwayjs/validate';
@@ -15,7 +15,7 @@ export class UpdateAvatarDTO {
 export class UpdateUserAvatarController {
   @Inject()
   userService: UserService;
-  @Post('/updateAvatar')
+  @Put('/Avatar')
   @Validate()
   async updateAvatar(ctx: KoaContext, @Body() body: UpdateAvatarDTO) {
     try {

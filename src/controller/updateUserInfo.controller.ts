@@ -1,4 +1,4 @@
-import { Post, Controller, Inject, Body } from '@midwayjs/core';
+import { Controller, Inject, Body, Put } from '@midwayjs/core';
 import { ApiTags } from '@midwayjs/swagger';
 import { UserService } from '../service/user.service';
 import { Validate } from '@midwayjs/validate';
@@ -15,7 +15,7 @@ export class UpdateUserInfoController {
   @Inject()
   userService: UserService;
 
-  @Post('/updateProfile')
+  @Put('/Profile')
   @Validate()
   async updateProfile(@Body() body: UserProfileDTO) {
     try {

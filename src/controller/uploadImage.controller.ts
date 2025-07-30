@@ -10,10 +10,10 @@ import {
 } from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
-@ApiTags('upload')
-@Controller('/upload')
+@ApiTags('image')
+@Controller('/image')
 export class UploadImageController {
-  @Post('/image')
+  @Post()
   async uploadImage(@Files() files: any[], @Fields() fields: any) {
     try {
       // 检查是否有文件上传

@@ -1,4 +1,4 @@
-import { Post, Controller, Inject, Body } from '@midwayjs/core';
+import { Post, Controller, Inject, Body, Del } from '@midwayjs/core';
 import { ApiTags } from '@midwayjs/swagger';
 import { UserService } from '../service/user.service';
 import { Validate } from '@midwayjs/validate';
@@ -55,12 +55,11 @@ export class RegisterController {
     }
   }
 
-  @Post('/unregister')
+  @Del('/unregister')
   @Validate()
   async unregister(@Body() body: UnregisterDTO) {
     try {
       const { userId, password } = body;
-
       // ✅ 获取当前登录用户ID
       const currentUserId = this.ctx.state.user.id;
       const targetUserId = userId || currentUserId;

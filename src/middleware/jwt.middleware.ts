@@ -65,8 +65,9 @@ export class JWTMiddleware implements IMiddleware<Context, NextFunction> {
       try {
         // 验证token
         const decoded = jwt.verify(token, this.jwtConfig.secret) as any;
-
+        console.log('JWT解码结果:', decoded);
         const session = await this.sessionService.validateSession(token);
+        console.log('会话验证结果:', session);
         if (!session) {
           ctx.status = 401;
           ctx.body = {
@@ -76,15 +77,15 @@ export class JWTMiddleware implements IMiddleware<Context, NextFunction> {
           };
           return;
         }
-
+        console.log('JWT验证通过，用户ID:', decoded.userId);
         ctx.state.user = {
           id: decoded.userId,
           sessionId: session.id,
         };
+        console.log('JWT中间件状态:', ctx.state.user);
         await next();
       } catch (error) {
         ctx.status = 401;
-
         let message = 'token验证失败';
         if (error.name === 'TokenExpiredError') {
           message = 'token已过期，请重新登录';

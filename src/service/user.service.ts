@@ -63,7 +63,7 @@ export class UserService {
           const deletedSessions = await manager.delete(UserSession, { userId });
           console.log(`✅ 删除了 ${deletedSessions.affected} 个会话`);
         } catch (error) {
-          console.log(`⚠️ 会话表可能不存在，跳过会话删除`);
+          console.log('⚠️ 会话表可能不存在，跳过会话删除');
         }
 
         // 4. 获取用户创建的活动并处理关联数据
@@ -85,14 +85,14 @@ export class UserService {
           if (activity.participants && activity.participants.length > 0) {
             activity.participants = [];
             await manager.save(Activity, activity);
-            console.log(`  ✅ 清空了活动参与者关系`);
+            console.log('  ✅ 清空了活动参与者关系');
           }
 
           // 清空活动的收藏者关系（多对多关系表）
           if (activity.favoritedBy && activity.favoritedBy.length > 0) {
             activity.favoritedBy = [];
             await manager.save(Activity, activity);
-            console.log(`  ✅ 清空了活动收藏者关系`);
+            console.log('  ✅ 清空了活动收藏者关系');
           }
         }
 

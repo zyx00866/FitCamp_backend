@@ -3,6 +3,10 @@ import { ApiTags } from '@midwayjs/swagger';
 import { ActivityService } from '../service/activity.service';
 import { Validate } from '@midwayjs/validate';
 
+export class FavouriteActivityDTO {
+  userId: number;
+  activityId: string;
+}
 @ApiTags(['activity'])
 @Controller('/activity')
 export class FavouriteActivityController {
@@ -11,9 +15,7 @@ export class FavouriteActivityController {
 
   @Post('/favourite')
   @Validate()
-  async favouriteActivity(
-    @Body() body: { userId: number; activityId: string }
-  ) {
+  async favouriteActivity(@Body() body: FavouriteActivityDTO) {
     const { userId, activityId } = body;
     try {
       return await this.activityService.favouriteActivity(userId, activityId);
@@ -28,9 +30,7 @@ export class FavouriteActivityController {
 
   @Post('/unfavourite')
   @Validate()
-  async unfavouriteActivity(
-    @Body() body: { userId: number; activityId: string }
-  ) {
+  async unfavouriteActivity(@Body() body: FavouriteActivityDTO) {
     const { userId, activityId } = body;
     try {
       return await this.activityService.unfavouriteActivity(userId, activityId);

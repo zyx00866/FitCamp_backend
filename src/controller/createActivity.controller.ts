@@ -1,4 +1,4 @@
-import { Post, Controller, Inject, Body } from '@midwayjs/core';
+import { Post, Controller, Inject, Body, Put, Del } from '@midwayjs/decorator';
 import { ApiTags } from '@midwayjs/swagger';
 import { ActivityService } from '../service/activity.service';
 import { Validate } from '@midwayjs/validate';
@@ -25,20 +25,20 @@ export class CreateActivityController {
   @Inject()
   activityService: ActivityService;
 
-  @Post('/create')
+  @Post()
   @Validate()
   async createActivity(@Body() activityDTO: ActivityDTO) {
     return await this.activityService.createActivity(activityDTO);
   }
 
-  @Post('/update')
+  @Put()
   @Validate()
   async updateActivity(@Body() activityDTO: ActivityDTO) {
     const { id, ...updateData } = activityDTO;
     return await this.activityService.updateActivity(id, updateData);
   }
 
-  @Post('/delete')
+  @Del()
   @Validate()
   async deleteActivity(@Body() body: { id: string }) {
     const { id } = body;

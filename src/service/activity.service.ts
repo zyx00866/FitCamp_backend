@@ -149,8 +149,8 @@ export class ActivityService {
 
     // 更新活动信息
     Object.assign(activity, updateData);
-
-    return await { success: true, data: this.activityRepo.save(activity) };
+    const updatedActivity = await this.activityRepo.save(activity);
+    return { success: true, data: updatedActivity };
   }
 
   // 删除活动（级联清理所有关联数据）
@@ -214,7 +214,8 @@ export class ActivityService {
   // 创建评论
   async createComment(commentData: Partial<Comment>) {
     const comment = this.commentRepo.create(commentData);
-    return await { success: true, data: this.commentRepo.save(comment) };
+    const savedComment = await this.commentRepo.save(comment);
+    return { success: true, data: savedComment };
   }
 
   //报名活动
@@ -287,7 +288,7 @@ export class ActivityService {
     if (!activity) {
       throw new Error('活动不存在');
     }
-
+    console.log('活动 favoritedBy:', activity.favoritedBy);
     if (!user) {
       throw new Error('用户不存在');
     }

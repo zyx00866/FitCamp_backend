@@ -12,7 +12,6 @@ export class CommentDTO {
   user: User;
   activity: Activity;
   starNumber: number;
-  createTime: Date;
 }
 @ApiTags(['comment'])
 @Controller('/comment')
@@ -20,18 +19,16 @@ export class CreateCommentController {
   @Inject()
   activityService: ActivityService;
 
-  @Post('/create')
+  @Post()
   @Validate()
   async createComment(@Body() commentDTO: CommentDTO) {
-    const { content, picture, user, activity, starNumber, createTime } =
-      commentDTO;
+    const { content, picture, user, activity, starNumber } = commentDTO;
     const newComment: Partial<Comment> = {
       content,
       picture,
       user,
       activity,
       starNumber,
-      createTime,
     };
     return await this.activityService.createComment(newComment);
   }
