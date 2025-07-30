@@ -54,6 +54,7 @@ describe('收藏/取消收藏活动 API', () => {
 
   afterAll(async () => {
     if (app && app.close) await app.close();
+    if (server && server.close) server.close();
   });
 
   it('收藏活动成功', async () => {

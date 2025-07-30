@@ -56,6 +56,7 @@ describe('报名活动 API', () => {
 
   afterAll(async () => {
     if (app && app.close) await app.close();
+    if (server && server.close) server.close();
   });
 
   it('报名活动成功', async () => {

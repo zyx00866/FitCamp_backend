@@ -13,6 +13,9 @@ export default {
         synchronize: true,
         logging: true,
         entities: [User, Activity, Comment, UserSession],
+        extra: {
+          busyTimeout: 10000, // 设置忙等待超时时间，单位为毫秒
+        },
       },
     },
   },

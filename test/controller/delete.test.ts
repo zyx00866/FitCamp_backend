@@ -52,6 +52,7 @@ describe('删除相关 API', () => {
 
   afterAll(async () => {
     if (app && app.close) await app.close();
+    if (server && server.close) server.close();
   });
 
   it('删除活动成功', async () => {
@@ -60,15 +61,15 @@ describe('删除相关 API', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({ id: activityId });
     console.log('删除活动返回:', res.body);
-    expect([true, false]).toContain(res.body.success);
+    expect(res.body.success).toBe(true);
 
     // 验证活动是否真的被删除
     const detailRes = await request(server)
         .get('/activity/detail')
         .query({ id: activityId })
         .set('Authorization', `Bearer ${token}`);
-    expect([true, false]).toContain(detailRes.body.success);
-    expect(detailRes.body.data === null || detailRes.body.success === false).toBe(true);
+    console.log('获取活动详情返回:', detailRes.body);
+    expect(detailRes.body.success).toBe(false);
     expect(detailRes.body.message).toMatch(/不存在|未找到/);
   });
 

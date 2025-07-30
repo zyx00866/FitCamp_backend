@@ -48,6 +48,7 @@ describe('获取活动信息 API', () => {
 
   afterAll(async () => {
     if (app && app.close) await app.close();
+    if (server && server.close) server.close();
   });
 
   it('获取所有活动列表', async () => {
