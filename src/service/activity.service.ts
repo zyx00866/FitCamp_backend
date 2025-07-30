@@ -100,10 +100,14 @@ export class ActivityService {
 
   // 获取单个活动详情
   async getActivityById(id: string) {
-    return await this.activityRepo.findOne({
+    const activity = await this.activityRepo.findOne({
       where: { id },
       relations: ['participants', 'favoritedBy', 'creator', 'comments'], // 添加 creator 关系
     });
+    if (!activity) {
+      throw new Error('活动不存在');
+    }
+    return activity;
   }
 
   // 获取用户创建的活动
